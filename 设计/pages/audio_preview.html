@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频预览 - AI有声书工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            height: 60px;
+            background: #252525;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid #333;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            padding: 8px 16px;
+            background: #2a2a2a;
+            border: none;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #3a3a3a;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            padding: 10px 20px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a3a;
+        }
+
+        .main-container {
+            height: calc(100vh - 60px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .waveform-section {
+            flex: 1;
+            background: #202020;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .waveform-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .chapter-info h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .chapter-meta {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .waveform-tools {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tool-btn {
+            padding: 8px 16px;
+            background: #2a2a2a;
+            border: none;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .tool-btn:hover {
+            background: #3a3a3a;
+        }
+
+        .tool-btn.active {
+            background: #667eea;
+        }
+
+        .waveform-canvas {
+            flex: 1;
+            background: #1a1a1a;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+            min-height: 300px;
+        }
+
+        .waveform-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #666;
+        }
+
+        .waveform-placeholder-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .timeline-markers {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 11px;
+            color: #999;
+        }
+
+        .marker {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .marker-line {
+            width: 1px;
+            height: 20px;
+            background: #667eea;
+        }
+
+        .marker-label {
+            margin-top: 4px;
+            font-size: 10px;
+        }
+
+        .playback-controls {
+            background: #2a2a2a;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .progress-bar {
+            margin-bottom: 16px;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .progress-track {
+            height: 8px;
+            background: #3a3a3a;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            width: 35%;
+            position: relative;
+        }
+
+        .progress-thumb {
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls-main {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .play-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .control-btn {
+            width: 48px;
+            height: 48px;
+            background: #3a3a3a;
+            border: none;
+            border-radius: 50%;
+            color: #e0e0e0;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn:hover {
+            background: #4a4a4a;
+            transform: scale(1.05);
+        }
+
+        .control-btn.play-btn {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-size: 24px;
+        }
+
+        .control-btn.play-btn:hover {
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .volume-control {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .volume-icon {
+            font-size: 20px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            max-width: 150px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #3a3a3a;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .speed-btn {
+            padding: 8px 16px;
+            background: #3a3a3a;
+            border: none;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .speed-btn:hover {
+            background: #4a4a4a;
+        }
+
+        .speed-btn.active {
+            background: #667eea;
+        }
+
+        .bottom-panel {
+            height: 280px;
+            background: #202020;
+            border-top: 1px solid #333;
+            display: flex;
+        }
+
+        .segments-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .segment-item {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .segment-item:hover {
+            background: #353535;
+        }
+
+        .segment-item.active {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 3px solid #667eea;
+        }
+
+        .segment-number {
+            width: 40px;
+            height: 40px;
+            background: #3a3a3a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .segment-content {
+            flex: 1;
+        }
+
+        .segment-speaker {
+            font-size: 12px;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .segment-text {
+            font-size: 13px;
+            color: #e0e0e0;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .segment-time {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .segment-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            color: #999;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .icon-btn:hover {
+            background: #3a3a3a;
+            color: #fff;
+        }
+
+        .inspector-panel {
+            width: 320px;
+            border-left: 1px solid #333;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            margin-bottom: 24px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .property-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .property-label {
+            color: #999;
+        }
+
+        .property-value {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .badge.success {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+        }
+
+        .waveform-visual {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .wave-bars {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 100%;
+        }
+
+        .wave-bar {
+            width: 4px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            opacity: 0.3;
+            animation: wave 1.5s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { height: 20%; }
+            50% { height: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.history.back()">← 返回</button>
+            <h1 class="page-title">音频预览 - 第1章</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn-secondary">🔄 重新生成</button>
+            <button class="btn-primary">💾 导出音频</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- 波形区域 -->
+        <div class="waveform-section">
+            <div class="waveform-header">
+                <div class="chapter-info">
+                    <h2>第1章 - 故事开始</h2>
+                    <div class="chapter-meta">共 47 段 · 8:24 · 已生成</div>
+                </div>
+                <div class="waveform-tools">
+                    <button class="tool-btn active">📊 波形</button>
+                    <button class="tool-btn">📈 频谱</button>
+                    <button class="tool-btn">🔍 放大</button>
+                    <button class="tool-btn">🔍 缩小</button>
+                    <button class="tool-btn">✂️ 剪辑</button>
+                </div>
+            </div>
+
+            <div class="waveform-canvas">
+                <!-- 波形可视化 -->
+                <div class="waveform-visual">
+                    <div class="wave-bars">
+                        <div class="wave-bar" style="height: 40%; animation-delay: 0s;"></div>
+                        <div class="wave-bar" style="height: 65%; animation-delay: 0.1s;"></div>
+                        <div class="wave-bar" style="height: 30%; animation-delay: 0.2s;"></div>
+                        <div class="wave-bar" style="height: 85%; animation-delay: 0.3s;"></div>
+                        <div class="wave-bar" style="height: 55%; animation-delay: 0.4s;"></div>
+                        <div class="wave-bar" style="height: 75%; animation-delay: 0.5s;"></div>
+                        <div class="wave-bar" style="height: 45%; animation-delay: 0.6s;"></div>
+                        <div class="wave-bar" style="height: 90%; animation-delay: 0.7s;"></div>
+                        <div class="wave-bar" style="height: 60%; animation-delay: 0.8s;"></div>
+                        <div class="wave-bar" style="height: 70%; animation-delay: 0.9s;"></div>
+                        <div class="wave-bar" style="height: 50%; animation-delay: 1.0s;"></div>
+                        <div class="wave-bar" style="height: 80%; animation-delay: 1.1s;"></div>
+                        <div class="wave-bar" style="height: 35%; animation-delay: 1.2s;"></div>
+                        <div class="wave-bar" style="height: 95%; animation-delay: 1.3s;"></div>
+                        <div class="wave-bar" style="height: 55%; animation-delay: 1.4s;"></div>
+                    </div>
+                </div>
+
+                <!-- 时间线标记 -->
+                <div class="timeline-markers">
+                    <div class="marker" style="left: 0%;">
+                        <div class="marker-line"></div>
+                        <div class="marker-label">0:00</div>
+                    </div>
+                    <div class="marker" style="left: 25%;">
+                        <div class="marker-line"></div>
+                        <div class="marker-label">2:06</div>
+                    </div>
+                    <div class="marker" style="left: 50%;">
+                        <div class="marker-line"></div>
+                        <div class="marker-label">4:12</div>
+                    </div>
+                    <div class="marker" style="left: 75%;">
+                        <div class="marker-line"></div>
+                        <div class="marker-label">6:18</div>
+                    </div>
+                    <div class="marker" style="left: 100%;">
+                        <div class="marker-line"></div>
+                        <div class="marker-label">8:24</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 播放控制 -->
+            <div class="playback-controls">
+                <div class="progress-bar">
+                    <div class="time-display">
+                        <span>02:56</span>
+                        <span>08:24</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill">
+                            <div class="progress-thumb"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="controls-main">
+                    <div class="play-controls">
+                        <button class="control-btn" title="上一段">⏮️</button>
+                        <button class="control-btn" title="快退10秒">⏪</button>
+                        <button class="control-btn play-btn" title="播放/暂停">▶️</button>
+                        <button class="control-btn" title="快进10秒">⏩</button>
+                        <button class="control-btn" title="下一段">⏭️</button>
+                    </div>
+
+                    <div class="volume-control">
+                        <div class="volume-icon">🔊</div>
+                        <div class="volume-slider">
+                            <input type="range" min="0" max="100" value="75">
+                        </div>
+                        <span style="font-size: 12px; color: #999;">75%</span>
+                    </div>
+
+                    <div class="speed-control">
+                        <button class="speed-btn">0.5x</button>
+                        <button class="speed-btn">0.75x</button>
+                        <button class="speed-btn active">1.0x</button>
+                        <button class="speed-btn">1.25x</button>
+                        <button class="speed-btn">1.5x</button>
+                        <button class="speed-btn">2.0x</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部面板 -->
+        <div class="bottom-panel">
+            <!-- 段落列表 -->
+            <div class="segments-list">
+                <div class="segment-item active">
+                    <div class="segment-number">1</div>
+                    <div class="segment-content">
+                        <div class="segment-speaker">🎭 旁白</div>
+                        <div class="segment-text">那是一个下着暴雨的夜晚，齐昊站在窗前，看着外面的闪电划过天际。他知道，今晚注定不平凡。</div>
+                        <div class="segment-time">0:00 - 0:12</div>
+                    </div>
+                    <div class="segment-actions">
+                        <button class="icon-btn" title="播放">▶️</button>
+                        <button class="icon-btn" title="编辑">✏️</button>
+                    </div>
+                </div>
+
+                <div class="segment-item">
+                    <div class="segment-number">2</div>
+                    <div class="segment-content">
+                        <div class="segment-speaker">👨 齐昊</div>
+                        <div class="segment-text">"这场雨来得真不是时候。"他自言自语道。</div>
+                        <div class="segment-time">0:12 - 0:15</div>
+                    </div>
+                    <div class="segment-actions">
+                        <button class="icon-btn">▶️</button>
+                        <button class="icon-btn">✏️</button>
+                    </div>
+                </div>
+
+                <div class="segment-item">
+                    <div class="segment-number">3</div>
+                    <div class="segment-content">
+                        <div class="segment-speaker">👦 齐复</div>
+                        <div class="segment-text">"哥，你在看什么呢？"齐复走了过来，好奇地问道。</div>
+                        <div class="segment-time">0:15 - 0:19</div>
+                    </div>
+                    <div class="segment-actions">
+                        <button class="icon-btn">▶️</button>
+                        <button class="icon-btn">✏️</button>
+                    </div>
+                </div>
+
+                <div class="segment-item">
+                    <div class="segment-number">4</div>
+                    <div class="segment-content">
+                        <div class="segment-speaker">👨 齐昊</div>
+                        <div class="segment-text">"没什么，"齐昊转过身来，"你的作业做完了吗？"</div>
+                        <div class="segment-time">0:19 - 0:22</div>
+                    </div>
+                    <div class="segment-actions">
+                        <button class="icon-btn">▶️</button>
+                        <button class="icon-btn">✏️</button>
+                    </div>
+                </div>
+
+                <div class="segment-item">
+                    <div class="segment-number">5</div>
+                    <div class="segment-content">
+                        <div class="segment-speaker">🎭 旁白</div>
+                        <div class="segment-text">就在这时，门铃响了。两人对视一眼，都从对方眼中看到了疑惑。这么晚了，会是谁呢？</div>
+                        <div class="segment-time">0:22 - 0:32</div>
+                    </div>
+                    <div class="segment-actions">
+                        <button class="icon-btn">▶️</button>
+                        <button class="icon-btn">✏️</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 检查器面板 -->
+            <div class="inspector-panel">
+                <div class="panel-section">
+                    <div class="panel-title">当前段落</div>
+                    <div class="property-item">
+                        <span class="property-label">序号</span>
+                        <span class="property-value">#1</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">说话人</span>
+                        <span class="property-value">旁白</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">时长</span>
+                        <span class="property-value">12秒</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">状态</span>
+                        <span class="badge success">已生成</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">音频属性</div>
+                    <div class="property-item">
+                        <span class="property-label">采样率</span>
+                        <span class="property-value">48 kHz</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">比特率</span>
+                        <span class="property-value">320 kbps</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">声道</span>
+                        <span class="property-value">立体声</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">文件大小</span>
+                        <span class="property-value">512 KB</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">语音参数</div>
+                    <div class="property-item">
+                        <span class="property-label">语速</span>
+                        <span class="property-value">1.0x</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">音调</span>
+                        <span class="property-value">0</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">音量</span>
+                        <span class="property-value">85%</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">情感强度</span>
+                        <span class="property-value">50%</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">TTS引擎</div>
+                    <div class="property-item">
+                        <span class="property-label">服务商</span>
+                        <span class="property-value">Azure</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">声音模型</span>
+                        <span class="property-value">云健</span>
+                    </div>
+                    <div class="property-item">
+                        <span class="property-label">生成时间</span>
+                        <span class="property-value">3.2秒</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 播放控制
+        const playBtn = document.querySelector('.play-btn');
+        let isPlaying = false;
+
+        playBtn.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            playBtn.textContent = isPlaying ? '⏸️' : '▶️';
+        });
+
+        // 速度控制
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 段落选择
+        document.querySelectorAll('.segment-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('icon-btn')) {
+                    document.querySelectorAll('.segment-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // 音量控制
+        const volumeSlider = document.querySelector('.volume-slider input');
+        const volumeDisplay = document.querySelector('.volume-control span');
+        
+        volumeSlider.addEventListener('input', function() {
+            volumeDisplay.textContent = this.value + '%';
+        });
+
+        console.log('🎵 音频预览页面已加载');
+    </script>
+</body>
+</html>

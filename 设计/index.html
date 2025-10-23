@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI有声书语音合成工具 - 页面导航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 48px 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 24px;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #999;
+        }
+
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .page-card {
+            background: #202020;
+            border-radius: 16px;
+            padding: 24px;
+            border: 2px solid #2a2a2a;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .page-card:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        }
+
+        .page-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .page-desc {
+            font-size: 14px;
+            color: #999;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .page-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .feature-tag {
+            padding: 4px 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 4px;
+            font-size: 11px;
+            color: #667eea;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge.new {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+        }
+
+        .badge.premium {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 64px;
+            padding-top: 32px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #202020;
+            border-radius: 16px;
+            padding: 32px;
+            border: 2px solid #2a2a2a;
+            margin-bottom: 48px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-number {
+            font-size: 36px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎙️</div>
+            <h1>AI有声书语音合成工具</h1>
+            <p class="subtitle">专业的AI驱动有声书制作平台 · 页面原型导航</p>
+        </div>
+
+        <div class="info-box">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-number">8</div>
+                    <div class="info-label">页面总数</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-number">50+</div>
+                    <div class="info-label">功能组件</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-number">100%</div>
+                    <div class="info-label">响应式设计</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 核心页面 -->
+        <div class="section">
+            <h2 class="section-title">
+                ⭐ 核心页面
+                <span class="badge">主要功能</span>
+            </h2>
+            <div class="page-grid">
+                <a href="ui_prototype_full.html" class="page-card">
+                    <div class="page-icon">🏠</div>
+                    <h3 class="page-title">完整版主页</h3>
+                    <p class="page-desc">包含项目管理、文本导入、智能配音、试听导出、设置等5个核心页面的完整版本。</p>
+                    <div class="page-features">
+                        <span class="feature-tag">多页面</span>
+                        <span class="feature-tag">标签导航</span>
+                        <span class="feature-tag">核心流程</span>
+                    </div>
+                </a>
+
+                <a href="ui_prototype.html" class="page-card">
+                    <div class="page-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">✏️</div>
+                    <h3 class="page-title">基础编辑器</h3>
+                    <p class="page-desc">原始编辑器页面，展示基本的对话编辑功能和界面布局。</p>
+                    <div class="page-features">
+                        <span class="feature-tag">编辑器</span>
+                        <span class="feature-tag">基础版</span>
+                    </div>
+                </a>
+
+                <a href="pages/editor.html" class="page-card">
+                    <div class="page-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">📝</div>
+                    <h3 class="page-title">高级对话编辑器</h3>
+                    <p class="page-desc">专业的对话编辑界面，支持章节管理、角色分配、实时预览和参数调整。</p>
+                    <div class="page-features">
+                        <span class="feature-tag">三栏布局</span>
+                        <span class="feature-tag">实时编辑</span>
+                        <span class="feature-tag">参数面板</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 功能页面 -->
+        <div class="section">
+            <h2 class="section-title">
+                🎯 功能页面
+                <span class="badge new">新增</span>
+            </h2>
+            <div class="page-grid">
+                <a href="pages/character_manager.html" class="page-card">
+                    <div class="page-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">👥</div>
+                    <h3 class="page-title">角色管理</h3>
+                    <p class="page-desc">集中管理所有角色的声音配置、参数设置和统计信息，支持快速预览和调整。</p>
+                    <div class="page-features">
+                        <span class="feature-tag">角色卡片</span>
+                        <span class="feature-tag">声音配置</span>
+                        <span class="feature-tag">统计面板</span>
+                    </div>
+                </a>
+
+                <a href="pages/audio_preview.html" class="page-card">
+                    <div class="page-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">🎵</div>
+                    <h3 class="page-title">音频预览器</h3>
+                    <p class="page-desc">专业的音频预览界面，带有波形显示、段落列表、播放控制和详细属性面板。</p>
+                    <div class="page-features">
+                        <span class="feature-tag">波形图</span>
+                        <span class="feature-tag">播放器</span>
+                        <span class="feature-tag">段落导航</span>
+                    </div>
+                </a>
+
+                <a href="pages/template_market.html" class="page-card">
+                    <div class="page-icon" style="background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);">🏪</div>
+                    <h3 class="page-title">模板市场</h3>
+                    <p class="page-desc">浏览和使用预设的配音模板、声音包和风格预设，快速开始项目创作。</p>
+                    <div class="page-features">
+                        <span class="feature-tag">模板库</span>
+                        <span class="feature-tag">声音包</span>
+                        <span class="feature-tag">风格预设</span>
+                    </div>
+                </a>
+
+                <a href="pages/project_analytics.html" class="page-card">
+                    <div class="page-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📊</div>
+                    <h3 class="page-title">项目统计分析</h3>
+                    <p class="page-desc">详细的项目数据统计和可视化分析，包括进度、角色排行、时间线等。</p>
+                    <div class="page-features">
+                        <span class="feature-tag">数据统计</span>
+                        <span class="feature-tag">图表展示</span>
+                        <span class="feature-tag">时间线</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 设计资源 -->
+        <div class="section">
+            <h2 class="section-title">
+                🎨 设计资源
+            </h2>
+            <div class="page-grid">
+                <div class="page-card" onclick="alert('请查看 README.md 文件')">
+                    <div class="page-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📖</div>
+                    <h3 class="page-title">设计文档</h3>
+                    <p class="page-desc">完整的设计规范、组件说明和技术栈建议，帮助你理解和扩展项目。</p>
+                    <div class="page-features">
+                        <span class="feature-tag">README.md</span>
+                        <span class="feature-tag">设计规范</span>
+                    </div>
+                </div>
+
+                <div class="page-card" onclick="alert('请查看 有声书工具.png 文件')">
+                    <div class="page-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🖼️</div>
+                    <h3 class="page-title">参考设计图</h3>
+                    <p class="page-desc">原始设计参考图，展示了产品的初步设计思路和视觉风格。</p>
+                    <div class="page-features">
+                        <span class="feature-tag">设计稿</span>
+                        <span class="feature-tag">PNG格式</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>AI有声书语音合成工具 · 原型设计集合</p>
+            <p style="margin-top: 8px;">© 2025 版本 v1.0.0 · 由 AI 助手设计</p>
+        </div>
+    </div>
+
+    <script>
+        console.log('🎙️ AI有声书工具 - 导航页已加载');
+        console.log('📄 共包含 8 个页面原型');
+    </script>
+</body>
+</html>

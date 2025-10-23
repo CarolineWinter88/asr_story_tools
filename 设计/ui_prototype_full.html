@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI有声书语音合成工具 - 完整版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            height: 60px;
+            background: #252525;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid #333;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .header-tabs {
+            display: flex;
+            gap: 8px;
+            margin-left: 24px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            background: #2a2a2a;
+            border: none;
+            border-radius: 6px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tab-btn:hover {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            padding: 10px 20px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a3a;
+        }
+
+        /* 主内容区 */
+        .main-container {
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            height: 100%;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* ============ 项目管理页 ============ */
+        .project-page {
+            padding: 32px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .project-card {
+            background: #202020;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #2a2a2a;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .project-card:hover {
+            border-color: #444;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .project-card:hover::before {
+            opacity: 1;
+        }
+
+        .project-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .project-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .project-menu {
+            display: flex;
+            gap: 4px;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            color: #999;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .icon-btn:hover {
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        .project-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .project-desc {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .project-stats {
+            display: flex;
+            gap: 16px;
+            padding: 12px 0;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #2a2a2a;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        .new-project-card {
+            background: transparent;
+            border: 2px dashed #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            min-height: 280px;
+        }
+
+        .new-project-card:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .new-project-icon {
+            width: 64px;
+            height: 64px;
+            background: #2a2a2a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .new-project-text {
+            font-size: 16px;
+            color: #999;
+        }
+
+        /* ============ 导入文本页 ============ */
+        .import-page {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100%;
+        }
+
+        .import-left {
+            background: #202020;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            padding: 32px;
+        }
+
+        .import-right {
+            display: flex;
+            flex-direction: column;
+            padding: 32px;
+        }
+
+        .upload-area {
+            border: 2px dashed #444;
+            border-radius: 16px;
+            padding: 48px;
+            text-align: center;
+            margin-bottom: 24px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+            background: #2a2a2a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .upload-title {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .upload-desc {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .text-input-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .text-input-label {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 12px;
+        }
+
+        .text-input {
+            flex: 1;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 16px;
+            color: #e0e0e0;
+            font-size: 14px;
+            line-height: 1.8;
+            resize: none;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .chapter-preview {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .preview-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .preview-list {
+            flex: 1;
+            overflow-y: auto;
+            background: #202020;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .preview-chapter {
+            padding: 16px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .preview-chapter-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .preview-chapter-content {
+            font-size: 13px;
+            color: #999;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* ============ 智能配音页 ============ */
+        .ai-voice-page {
+            padding: 32px;
+            display: flex;
+            gap: 32px;
+        }
+
+        .voice-config {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-section {
+            background: #202020;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .voice-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .voice-option {
+            padding: 16px;
+            background: #2a2a2a;
+            border: 2px solid #3a3a3a;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .voice-option:hover {
+            background: #353535;
+        }
+
+        .voice-option.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .voice-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .voice-info {
+            flex: 1;
+        }
+
+        .voice-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .voice-meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .character-list {
+            flex: 1;
+            background: #202020;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+        }
+
+        .character-item {
+            padding: 16px;
+            background: #2a2a2a;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .character-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .character-badge {
+            padding: 4px 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            font-size: 11px;
+            color: #667eea;
+        }
+
+        /* ============ 试听导出页 ============ */
+        .export-page {
+            padding: 32px;
+            display: flex;
+            gap: 32px;
+        }
+
+        .audio-player-section {
+            flex: 1;
+        }
+
+        .player-card {
+            background: #202020;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .player-artwork {
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+
+        .player-info {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .player-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .player-subtitle {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .control-btn {
+            width: 48px;
+            height: 48px;
+            background: #2a2a2a;
+            border: none;
+            border-radius: 50%;
+            color: #e0e0e0;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            background: #3a3a3a;
+            transform: scale(1.1);
+        }
+
+        .control-btn.play {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-size: 28px;
+        }
+
+        .progress-section {
+            margin-bottom: 16px;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .timeline {
+            height: 6px;
+            background: #2a2a2a;
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .timeline-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+            width: 35%;
+        }
+
+        .chapter-timeline {
+            background: #202020;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .timeline-item {
+            padding: 12px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+        }
+
+        .timeline-item:hover {
+            background: #353535;
+        }
+
+        .timeline-item.active {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 3px solid #667eea;
+        }
+
+        .timeline-number {
+            width: 32px;
+            height: 32px;
+            background: #3a3a3a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .export-settings {
+            width: 360px;
+            background: #202020;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .settings-group {
+            margin-bottom: 24px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* ============ 设置页 ============ */
+        .settings-page {
+            padding: 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .settings-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 16px;
+        }
+
+        .settings-nav-item {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .settings-nav-item:hover {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        .settings-nav-item.active {
+            background: #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        .settings-section {
+            background: #202020;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .setting-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .toggle-switch {
+            width: 48px;
+            height: 26px;
+            background: #3a3a3a;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            left: 24px;
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3a3a3a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a4a4a;
+        }
+
+        /* 通用样式 */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge.success {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+        }
+
+        .badge.warning {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+        }
+
+        .badge.error {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <div class="logo-icon">🎙️</div>
+                <span>AI有声书工具</span>
+            </div>
+            <div class="header-tabs">
+                <button class="tab-btn" data-page="project">📚 我的项目</button>
+                <button class="tab-btn active" data-page="import">📝 导入文本</button>
+                <button class="tab-btn" data-page="ai-voice">🎵 智能配音</button>
+                <button class="tab-btn" data-page="export">🎧 试听/导出</button>
+                <button class="tab-btn" data-page="settings">⚙️ 设置</button>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="avatar">👤</div>
+                <span>用户名</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="main-container">
+        <!-- ============ 项目管理页 ============ -->
+        <div class="page" id="project-page">
+            <div class="project-page">
+                <div class="page-header">
+                    <h1 class="page-title">我的有声书项目</h1>
+                    <p class="page-subtitle">管理和创建你的AI有声书项目</p>
+                </div>
+                
+                <div class="project-grid">
+                    <!-- 新建项目卡片 -->
+                    <div class="project-card new-project-card">
+                        <div class="new-project-icon">➕</div>
+                        <div class="new-project-text">创建新项目</div>
+                    </div>
+
+                    <!-- 项目卡片示例 -->
+                    <div class="project-card">
+                        <div class="project-card-header">
+                            <div class="project-icon">📖</div>
+                            <div class="project-menu">
+                                <button class="icon-btn" title="编辑">✏️</button>
+                                <button class="icon-btn" title="更多">⋯</button>
+                            </div>
+                        </div>
+                        <h3 class="project-name">三体 - 第一部</h3>
+                        <p class="project-desc">刘慈欣的科幻巨作，讲述了地球文明与三体文明的第一次接触...</p>
+                        <div class="project-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">章节</span>
+                                <span class="stat-value">38</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">角色</span>
+                                <span class="stat-value">12</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">时长</span>
+                                <span class="stat-value">8.5小时</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">状态</span>
+                                <span class="badge success">已完成</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-card-header">
+                            <div class="project-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">⚔️</div>
+                            <div class="project-menu">
+                                <button class="icon-btn">✏️</button>
+                                <button class="icon-btn">⋯</button>
+                            </div>
+                        </div>
+                        <h3 class="project-name">剑来</h3>
+                        <p class="project-desc">烽火戏诸侯的仙侠小说，一个少年的成长之路...</p>
+                        <div class="project-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">章节</span>
+                                <span class="stat-value">156</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">角色</span>
+                                <span class="stat-value">25</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">时长</span>
+                                <span class="stat-value">32小时</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">状态</span>
+                                <span class="badge warning">进行中</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="project-card">
+                        <div class="project-card-header">
+                            <div class="project-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🌟</div>
+                            <div class="project-menu">
+                                <button class="icon-btn">✏️</button>
+                                <button class="icon-btn">⋯</button>
+                            </div>
+                        </div>
+                        <h3 class="project-name">庆余年</h3>
+                        <p class="project-desc">猫腻的经典小说，穿越与权谋的完美结合...</p>
+                        <div class="project-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">章节</span>
+                                <span class="stat-value">89</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">角色</span>
+                                <span class="stat-value">18</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">时长</span>
+                                <span class="stat-value">--</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">状态</span>
+                                <span class="badge">草稿</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 15%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ 导入文本页 ============ -->
+        <div class="page active" id="import-page">
+            <div class="import-page">
+                <div class="import-left">
+                    <h2 class="page-title" style="margin-bottom: 24px;">导入文本</h2>
+                    
+                    <div class="upload-area">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-title">拖拽文件到这里或点击上传</div>
+                        <div class="upload-desc">支持 TXT、DOCX、PDF 格式，最大100MB</div>
+                        <button class="btn-primary" style="margin-top: 16px;">选择文件</button>
+                    </div>
+
+                    <div class="text-input-area">
+                        <div class="text-input-label">或直接粘贴文本内容</div>
+                        <textarea class="text-input" placeholder="在这里粘贴你的小说文本内容...
+
+系统将自动识别章节，你也可以手动调整章节划分。
+
+示例格式：
+第一章 标题
+正文内容...
+
+第二章 标题
+正文内容..."></textarea>
+                        <div style="display: flex; gap: 12px; margin-top: 16px;">
+                            <button class="btn-secondary" style="flex: 1;">清空</button>
+                            <button class="btn-primary" style="flex: 2;">智能分章 →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="import-right">
+                    <div class="chapter-preview">
+                        <div class="preview-header">
+                            <h3 class="preview-title">章节预览 (共 12 章)</h3>
+                            <button class="btn-secondary">调整分章规则</button>
+                        </div>
+                        
+                        <div class="preview-list">
+                            <div class="preview-chapter">
+                                <div class="preview-chapter-title">第1章 - 故事开始</div>
+                                <div class="preview-chapter-content">
+                                    那是一个下着暴雨的夜晚，齐昊站在窗前，看着外面的闪电...这是一个漫长的故事的开始，没有人知道接下来会发生什么...
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; color: #666;">
+                                    <span>约 2,458 字</span>
+                                    <span>预计 8 分钟</span>
+                                </div>
+                            </div>
+
+                            <div class="preview-chapter">
+                                <div class="preview-chapter-title">第2章 - 波又起</div>
+                                <div class="preview-chapter-content">
+                                    "嘿！不要乱用肆书！"齐复大声喊道。他知道这个包头的威力，如果使用不当...
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; color: #666;">
+                                    <span>约 3,127 字</span>
+                                    <span>预计 10 分钟</span>
+                                </div>
+                            </div>
+
+                            <div class="preview-chapter">
+                                <div class="preview-chapter-title">第3章 - 转折点</div>
+                                <div class="preview-chapter-content">
+                                    林懿终于明白了一切。她看着齐昊，眼神中充满了复杂的情绪...
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; color: #666;">
+                                    <span>约 1,986 字</span>
+                                    <span>预计 6 分钟</span>
+                                </div>
+                            </div>
+
+                            <div class="preview-chapter">
+                                <div class="preview-chapter-title">第4章 - 新的挑战</div>
+                                <div class="preview-chapter-content">
+                                    严庆带来了一个令人震惊的消息。所有人都沉默了...
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; color: #666;">
+                                    <span>约 2,754 字</span>
+                                    <span>预计 9 分钟</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; margin-top: 16px;">
+                            <button class="btn-secondary" style="flex: 1;">返回编辑</button>
+                            <button class="btn-primary" style="flex: 2;">确认并继续 →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ 智能配音页 ============ -->
+        <div class="page" id="ai-voice-page">
+            <div class="ai-voice-page">
+                <div class="voice-config">
+                    <h2 class="page-title" style="margin-bottom: 24px;">智能配音设置</h2>
+                    
+                    <div class="config-section">
+                        <div class="section-title">🎭 AI角色识别</div>
+                        <div class="form-group">
+                            <label class="form-label">识别模式</label>
+                            <select class="form-select">
+                                <option>自动识别对话角色</option>
+                                <option>手动标注角色</option>
+                                <option>混合模式</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">对话标识符</label>
+                            <input type="text" class="form-input" value='"' placeholder='例如: " 或 「'>
+                        </div>
+                        <button class="btn-primary" style="width: 100%;">开始智能识别</button>
+                    </div>
+
+                    <div class="config-section">
+                        <div class="section-title">🎤 声音库选择</div>
+                        <div class="form-group">
+                            <label class="form-label">声音引擎</label>
+                            <select class="form-select">
+                                <option>Azure TTS (推荐)</option>
+                                <option>阿里云 TTS</option>
+                                <option>腾讯云 TTS</option>
+                                <option>科大讯飞 TTS</option>
+                                <option>OpenAI TTS</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">选择声音（主角 - 齐昊）</label>
+                            <div class="voice-grid">
+                                <div class="voice-option selected">
+                                    <div class="voice-avatar">👨</div>
+                                    <div class="voice-info">
+                                        <div class="voice-name">云希</div>
+                                        <div class="voice-meta">男声 · 青年</div>
+                                    </div>
+                                    <button class="icon-btn">▶️</button>
+                                </div>
+                                <div class="voice-option">
+                                    <div class="voice-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">👨</div>
+                                    <div class="voice-info">
+                                        <div class="voice-name">云扬</div>
+                                        <div class="voice-meta">男声 · 成熟</div>
+                                    </div>
+                                    <button class="icon-btn">▶️</button>
+                                </div>
+                                <div class="voice-option">
+                                    <div class="voice-avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">👨</div>
+                                    <div class="voice-info">
+                                        <div class="voice-name">云泽</div>
+                                        <div class="voice-meta">男声 · 少年</div>
+                                    </div>
+                                    <button class="icon-btn">▶️</button>
+                                </div>
+                                <div class="voice-option">
+                                    <div class="voice-avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">👨</div>
+                                    <div class="voice-info">
+                                        <div class="voice-name">云野</div>
+                                        <div class="voice-meta">男声 · 磁性</div>
+                                    </div>
+                                    <button class="icon-btn">▶️</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <div class="section-title">⚙️ 全局配置</div>
+                        <div class="form-group">
+                            <label class="form-label">语速</label>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <input type="range" style="flex: 1;" min="0" max="100" value="50">
+                                <span style="min-width: 50px; text-align: right; color: #999;">1.0x</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">音调</label>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <input type="range" style="flex: 1;" min="0" max="100" value="50">
+                                <span style="min-width: 50px; text-align: right; color: #999;">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="character-list">
+                    <div class="section-title">👥 识别到的角色 (8)</div>
+                    <div style="overflow-y: auto; flex: 1;">
+                        <div class="character-item">
+                            <div class="character-info">
+                                <div class="voice-avatar">👨</div>
+                                <div>
+                                    <div style="font-weight: 600; margin-bottom: 4px;">齐昊</div>
+                                    <div style="font-size: 12px; color: #666;">出现 47 次</div>
+                                </div>
+                            </div>
+                            <div class="character-badge">已配音</div>
+                        </div>
+
+                        <div class="character-item">
+                            <div class="character-info">
+                                <div class="voice-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">👦</div>
+                                <div>
+                                    <div style="font-weight: 600; margin-bottom: 4px;">齐复</div>
+                                    <div style="font-size: 12px; color: #666;">出现 32 次</div>
+                                </div>
+                            </div>
+                            <div class="character-badge">已配音</div>
+                        </div>
+
+                        <div class="character-item">
+                            <div class="character-info">
+                                <div class="voice-avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">👧</div>
+                                <div>
+                                    <div style="font-weight: 600; margin-bottom: 4px;">林懿</div>
+                                    <div style="font-size: 12px; color: #666;">出现 28 次</div>
+                                </div>
+                            </div>
+                            <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">选择声音</button>
+                        </div>
+
+                        <div class="character-item">
+                            <div class="character-info">
+                                <div class="voice-avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">👨</div>
+                                <div>
+                                    <div style="font-weight: 600; margin-bottom: 4px;">严庆</div>
+                                    <div style="font-size: 12px; color: #666;">出现 19 次</div>
+                                </div>
+                            </div>
+                            <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">选择声音</button>
+                        </div>
+
+                        <div class="character-item">
+                            <div class="character-info">
+                                <div class="voice-avatar" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">👧</div>
+                                <div>
+                                    <div style="font-weight: 600; margin-bottom: 4px;">怡欣</div>
+                                    <div style="font-size: 12px; color: #666;">出现 15 次</div>
+                                </div>
+                            </div>
+                            <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">选择声音</button>
+                        </div>
+
+                        <div class="character-item">
+                            <div class="character-info">
+                                <div class="voice-avatar" style="background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);">👨</div>
+                                <div>
+                                    <div style="font-weight: 600; margin-bottom: 4px;">林懿</div>
+                                    <div style="font-size: 12px; color: #666;">出现 12 次</div>
+                                </div>
+                            </div>
+                            <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">选择声音</button>
+                        </div>
+
+                        <div class="character-item">
+                            <div class="character-info">
+                                <div class="voice-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">🎭</div>
+                                <div>
+                                    <div style="font-weight: 600; margin-bottom: 4px;">旁白</div>
+                                    <div style="font-size: 12px; color: #666;">出现 156 次</div>
+                                </div>
+                            </div>
+                            <div class="character-badge">已配音</div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" style="width: 100%; margin-top: 16px;">批量分配声音</button>
+                    <button class="btn-secondary" style="width: 100%; margin-top: 8px;">手动添加角色</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ 试听导出页 ============ -->
+        <div class="page" id="export-page">
+            <div class="export-page">
+                <div class="audio-player-section">
+                    <h2 class="page-title" style="margin-bottom: 24px;">试听与导出</h2>
+                    
+                    <div class="player-card">
+                        <div class="player-artwork">🎵</div>
+                        <div class="player-info">
+                            <div class="player-title">第1章 - 故事开始</div>
+                            <div class="player-subtitle">三体 · 刘慈欣</div>
+                        </div>
+                        
+                        <div class="player-controls">
+                            <button class="control-btn">⏮️</button>
+                            <button class="control-btn">⏪</button>
+                            <button class="control-btn play">▶️</button>
+                            <button class="control-btn">⏩</button>
+                            <button class="control-btn">⏭️</button>
+                        </div>
+
+                        <div class="progress-section">
+                            <div class="time-display">
+                                <span>02:35</span>
+                                <span>08:24</span>
+                            </div>
+                            <div class="timeline">
+                                <div class="timeline-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chapter-timeline">
+                        <div style="font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                            <span>章节列表</span>
+                            <span style="font-size: 12px; color: #666; font-weight: normal;">共 38 章 · 8.5 小时</span>
+                        </div>
+                        
+                        <div class="timeline-item active">
+                            <div class="timeline-number">1</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; margin-bottom: 4px;">第1章 - 故事开始</div>
+                                <div style="font-size: 12px; color: #666;">8:24 · 已生成</div>
+                            </div>
+                            <button class="icon-btn">▶️</button>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-number">2</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; margin-bottom: 4px;">第2章 - 波又起</div>
+                                <div style="font-size: 12px; color: #666;">10:15 · 已生成</div>
+                            </div>
+                            <button class="icon-btn">▶️</button>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-number">3</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; margin-bottom: 4px;">第3章 - 转折点</div>
+                                <div style="font-size: 12px; color: #666;">6:48 · 已生成</div>
+                            </div>
+                            <button class="icon-btn">▶️</button>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-number">4</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; margin-bottom: 4px;">第4章 - 新的挑战</div>
+                                <div style="font-size: 12px; color: #666;">9:32 · 生成中...</div>
+                            </div>
+                            <div class="badge warning">生成中</div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-number">5</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; margin-bottom: 4px;">第5章 - 未命名</div>
+                                <div style="font-size: 12px; color: #666;">预计 7:20</div>
+                            </div>
+                            <div class="badge">待生成</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="export-settings">
+                    <div class="section-title">📦 导出设置</div>
+                    
+                    <div class="settings-group">
+                        <label class="form-label">输出格式</label>
+                        <select class="form-select">
+                            <option>MP3 (推荐)</option>
+                            <option>WAV (无损)</option>
+                            <option>M4A</option>
+                            <option>OGG</option>
+                        </select>
+                    </div>
+
+                    <div class="settings-group">
+                        <label class="form-label">音质</label>
+                        <select class="form-select">
+                            <option>高品质 (320kbps)</option>
+                            <option>标准 (192kbps)</option>
+                            <option>低品质 (128kbps)</option>
+                        </select>
+                    </div>
+
+                    <div class="settings-group">
+                        <label class="form-label">导出范围</label>
+                        <select class="form-select">
+                            <option>全部章节</option>
+                            <option>当前章节</option>
+                            <option>自定义范围</option>
+                        </select>
+                    </div>
+
+                    <div class="settings-group">
+                        <label class="form-label">附加选项</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="metadata" checked>
+                                <label for="metadata">包含元数据</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="cover" checked>
+                                <label for="cover">嵌入封面图</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="chapters">
+                                <label for="chapters">章节标记</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="normalize" checked>
+                                <label for="normalize">音量标准化</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <label class="form-label">预估文件大小</label>
+                        <div style="padding: 12px; background: #2a2a2a; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 600; color: #667eea;">286 MB</div>
+                            <div style="font-size: 12px; color: #999; margin-top: 4px;">约 8.5 小时音频</div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" style="width: 100%; margin-top: 16px;">💾 导出音频</button>
+                    <button class="btn-secondary" style="width: 100%; margin-top: 8px;">📤 分享项目</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ 设置页 ============ -->
+        <div class="page" id="settings-page">
+            <div class="settings-page">
+                <h2 class="page-title" style="margin-bottom: 24px;">设置</h2>
+                
+                <div class="settings-nav">
+                    <button class="settings-nav-item active">🔧 通用</button>
+                    <button class="settings-nav-item">🎤 语音引擎</button>
+                    <button class="settings-nav-item">💾 存储</button>
+                    <button class="settings-nav-item">🔑 API密钥</button>
+                    <button class="settings-nav-item">ℹ️ 关于</button>
+                </div>
+
+                <div class="settings-section">
+                    <div class="section-title">界面设置</div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">深色模式</div>
+                            <div class="setting-desc">使用深色主题保护眼睛</div>
+                        </div>
+                        <div class="toggle-switch active"></div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">紧凑模式</div>
+                            <div class="setting-desc">减少界面间距，显示更多内容</div>
+                        </div>
+                        <div class="toggle-switch"></div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">语言</div>
+                            <div class="setting-desc">选择界面显示语言</div>
+                        </div>
+                        <select class="form-select" style="width: 150px;">
+                            <option>简体中文</option>
+                            <option>English</option>
+                            <option>繁體中文</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="section-title">自动化设置</div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">自动保存</div>
+                            <div class="setting-desc">自动保存项目修改</div>
+                        </div>
+                        <div class="toggle-switch active"></div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">智能章节识别</div>
+                            <div class="setting-desc">导入文本时自动识别章节</div>
+                        </div>
+                        <div class="toggle-switch active"></div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">自动角色分配</div>
+                            <div class="setting-desc">使用AI自动分配角色声音</div>
+                        </div>
+                        <div class="toggle-switch"></div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="section-title">音频设置</div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">默认语速</div>
+                            <div class="setting-desc">新建角色的默认语速</div>
+                        </div>
+                        <input type="range" style="width: 200px;" min="0" max="100" value="50">
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">默认输出格式</div>
+                            <div class="setting-desc">导出音频的默认格式</div>
+                        </div>
+                        <select class="form-select" style="width: 150px;">
+                            <option>MP3</option>
+                            <option>WAV</option>
+                            <option>M4A</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">音量标准化</div>
+                            <div class="setting-desc">自动调整音量一致性</div>
+                        </div>
+                        <div class="toggle-switch active"></div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="section-title">缓存与存储</div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">缓存大小</div>
+                            <div class="setting-desc">当前使用 1.2 GB / 5 GB</div>
+                        </div>
+                        <button class="btn-secondary">清理缓存</button>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-name">项目备份</div>
+                            <div class="setting-desc">自动备份项目到云端</div>
+                        </div>
+                        <div class="toggle-switch active"></div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; padding: 32px 0; color: #666; font-size: 14px;">
+                    <p>AI有声书工具 v1.0.0</p>
+                    <p style="margin-top: 8px;">© 2025 保留所有权利</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面切换
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const pages = document.querySelectorAll('.page');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const pageName = btn.getAttribute('data-page');
+                
+                // 更新按钮状态
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // 更新页面显示
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(pageName + '-page').classList.add('active');
+            });
+        });
+
+        // 项目卡片点击
+        document.querySelectorAll('.project-card:not(.new-project-card)').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('icon-btn')) {
+                    // 跳转到编辑页（这里暂时没有实现编辑页）
+                    console.log('打开项目编辑页');
+                }
+            });
+        });
+
+        // 新建项目
+        document.querySelector('.new-project-card')?.addEventListener('click', () => {
+            alert('创建新项目功能待实现');
+        });
+
+        // 切换开关
+        document.querySelectorAll('.toggle-switch').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+            });
+        });
+
+        // 声音选项选择
+        document.querySelectorAll('.voice-option').forEach(option => {
+            option.addEventListener('click', () => {
+                option.closest('.voice-grid').querySelectorAll('.voice-option').forEach(o => {
+                    o.classList.remove('selected');
+                });
+                option.classList.add('selected');
+            });
+        });
+
+        // 播放按钮
+        const playBtn = document.querySelector('.control-btn.play');
+        if (playBtn) {
+            playBtn.addEventListener('click', () => {
+                if (playBtn.textContent === '▶️') {
+                    playBtn.textContent = '⏸️';
+                } else {
+                    playBtn.textContent = '▶️';
+                }
+            });
+        }
+
+        // 章节时间线点击
+        document.querySelectorAll('.timeline-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('icon-btn')) {
+                    document.querySelectorAll('.timeline-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // 设置导航
+        document.querySelectorAll('.settings-nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        console.log('✨ AI有声书工具完整版已加载');
+    </script>
+</body>
+</html>

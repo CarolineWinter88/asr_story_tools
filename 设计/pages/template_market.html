@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模板市场 - AI有声书工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .header {
+            height: 60px;
+            background: #252525;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            padding: 8px 16px;
+            background: #2a2a2a;
+            border: none;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #3a3a3a;
+        }
+
+        .page-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 24px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .filter-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background: #2a2a2a;
+            border: none;
+            border-radius: 8px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-btn:hover {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .sort-select {
+            padding: 10px 16px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .template-card {
+            background: #202020;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #2a2a2a;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .template-card:hover {
+            border-color: #444;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .template-preview {
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            position: relative;
+        }
+
+        .template-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .template-content {
+            padding: 20px;
+        }
+
+        .template-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .template-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .template-author {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .template-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #ffa502;
+        }
+
+        .template-desc {
+            font-size: 13px;
+            color: #999;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .template-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #999;
+        }
+
+        .template-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 16px;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .template-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-use {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-use:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .featured-section {
+            margin-bottom: 48px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .section-link {
+            color: #667eea;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .section-link:hover {
+            color: #764ba2;
+        }
+
+        .featured-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+
+        .banner-content h2 {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .banner-content p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        .btn-primary {
+            padding: 12px 24px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .banner-illustration {
+            font-size: 120px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .badge.hot {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+
+        .badge.new {
+            background: rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+        }
+
+        .badge.premium {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.history.back()">← 返回</button>
+            <h1 class="page-title">模板市场</h1>
+        </div>
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="搜索模板、声音、风格...">
+        </div>
+        <div></div>
+    </div>
+
+    <div class="container">
+        <!-- 精选横幅 -->
+        <div class="featured-banner">
+            <div class="banner-content">
+                <h2>🎉 专业配音模板库</h2>
+                <p>精选数百个专业配音模板，一键应用，快速开始你的有声书创作</p>
+                <button class="btn-primary">探索模板 →</button>
+            </div>
+            <div class="banner-illustration">🎭</div>
+        </div>
+
+        <!-- 筛选器 -->
+        <div class="filter-section">
+            <div class="filter-tabs">
+                <button class="filter-btn active">全部</button>
+                <button class="filter-btn">小说模板</button>
+                <button class="filter-btn">声音包</button>
+                <button class="filter-btn">风格预设</button>
+                <button class="filter-btn">配音方案</button>
+            </div>
+            <select class="sort-select">
+                <option>最新上传</option>
+                <option>最受欢迎</option>
+                <option>评分最高</option>
+                <option>下载最多</option>
+            </select>
+        </div>
+
+        <!-- 热门推荐 -->
+        <div class="featured-section">
+            <div class="section-header">
+                <h2 class="section-title">🔥 热门推荐</h2>
+                <a class="section-link">查看更多 →</a>
+            </div>
+            
+            <div class="template-grid">
+                <!-- 模板卡片 1 -->
+                <div class="template-card">
+                    <div class="template-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        📚
+                        <div class="template-badge badge hot">🔥 热门</div>
+                    </div>
+                    <div class="template-content">
+                        <div class="template-header">
+                            <div>
+                                <h3 class="template-name">经典小说配音方案</h3>
+                                <div class="template-author">by 官方团队</div>
+                            </div>
+                            <div class="template-rating">
+                                ⭐ 4.9
+                            </div>
+                        </div>
+                        <p class="template-desc">适合传统长篇小说，包含旁白、主角、配角等完整角色配音方案。声音温和稳重，适合长时间收听。</p>
+                        <div class="template-tags">
+                            <span class="tag">小说</span>
+                            <span class="tag">多角色</span>
+                            <span class="tag">Azure TTS</span>
+                        </div>
+                        <div class="template-footer">
+                            <div class="template-stats">
+                                <div class="stat">💾 12.3k</div>
+                                <div class="stat">❤️ 8.5k</div>
+                            </div>
+                            <button class="btn-use">使用模板</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 模板卡片 2 -->
+                <div class="template-card">
+                    <div class="template-preview" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        🎭
+                        <div class="template-badge badge new">✨ 新品</div>
+                    </div>
+                    <div class="template-content">
+                        <div class="template-header">
+                            <div>
+                                <h3 class="template-name">情感丰富声音包</h3>
+                                <div class="template-author">by 声音工作室</div>
+                            </div>
+                            <div class="template-rating">
+                                ⭐ 4.8
+                            </div>
+                        </div>
+                        <p class="template-desc">10种情绪表达，包含喜怒哀乐等多种情感变化，让你的有声书更加生动有趣。</p>
+                        <div class="template-tags">
+                            <span class="tag">情感</span>
+                            <span class="tag">声音包</span>
+                            <span class="tag">多引擎</span>
+                        </div>
+                        <div class="template-footer">
+                            <div class="template-stats">
+                                <div class="stat">💾 8.2k</div>
+                                <div class="stat">❤️ 6.1k</div>
+                            </div>
+                            <button class="btn-use">使用模板</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 模板卡片 3 -->
+                <div class="template-card">
+                    <div class="template-preview" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        ⚔️
+                        <div class="template-badge badge">推荐</div>
+                    </div>
+                    <div class="template-content">
+                        <div class="template-header">
+                            <div>
+                                <h3 class="template-name">武侠仙侠风格</h3>
+                                <div class="template-author">by 东方幻想</div>
+                            </div>
+                            <div class="template-rating">
+                                ⭐ 4.7
+                            </div>
+                        </div>
+                        <p class="template-desc">专为武侠、仙侠类小说设计，江湖豪情、仙风道骨，一应俱全。</p>
+                        <div class="template-tags">
+                            <span class="tag">武侠</span>
+                            <span class="tag">仙侠</span>
+                            <span class="tag">风格</span>
+                        </div>
+                        <div class="template-footer">
+                            <div class="template-stats">
+                                <div class="stat">💾 15.7k</div>
+                                <div class="stat">❤️ 11.2k</div>
+                            </div>
+                            <button class="btn-use">使用模板</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 声音库 -->
+        <div class="featured-section">
+            <div class="section-header">
+                <h2 class="section-title">🎤 精选声音库</h2>
+                <a class="section-link">查看更多 →</a>
+            </div>
+            
+            <div class="template-grid">
+                <!-- 声音卡片 1 -->
+                <div class="template-card">
+                    <div class="template-preview" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        👨
+                        <div class="template-badge badge premium">💎 高级</div>
+                    </div>
+                    <div class="template-content">
+                        <div class="template-header">
+                            <div>
+                                <h3 class="template-name">男声组合包 · 青年</h3>
+                                <div class="template-author">Azure TTS</div>
+                            </div>
+                            <div class="template-rating">
+                                ⭐ 5.0
+                            </div>
+                        </div>
+                        <p class="template-desc">包含8种男性青年声音，适合主角、配角等不同角色，音色清晰自然。</p>
+                        <div class="template-tags">
+                            <span class="tag">男声</span>
+                            <span class="tag">青年</span>
+                            <span class="tag">Azure</span>
+                        </div>
+                        <div class="template-footer">
+                            <div class="template-stats">
+                                <div class="stat">💾 20.1k</div>
+                                <div class="stat">❤️ 15.8k</div>
+                            </div>
+                            <button class="btn-use">使用声音</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 声音卡片 2 -->
+                <div class="template-card">
+                    <div class="template-preview" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                        👧
+                        <div class="template-badge badge hot">🔥 热门</div>
+                    </div>
+                    <div class="template-content">
+                        <div class="template-header">
+                            <div>
+                                <h3 class="template-name">女声组合包 · 温柔</h3>
+                                <div class="template-author">Azure TTS</div>
+                            </div>
+                            <div class="template-rating">
+                                ⭐ 4.9
+                            </div>
+                        </div>
+                        <p class="template-desc">精选6种温柔女声，适合女性角色配音，声音甜美动人。</p>
+                        <div class="template-tags">
+                            <span class="tag">女声</span>
+                            <span class="tag">温柔</span>
+                            <span class="tag">Azure</span>
+                        </div>
+                        <div class="template-footer">
+                            <div class="template-stats">
+                                <div class="stat">💾 18.9k</div>
+                                <div class="stat">❤️ 14.2k</div>
+                            </div>
+                            <button class="btn-use">使用声音</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 声音卡片 3 -->
+                <div class="template-card">
+                    <div class="template-preview" style="background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);">
+                        🎙️
+                        <div class="template-badge badge new">✨ 新品</div>
+                    </div>
+                    <div class="template-content">
+                        <div class="template-header">
+                            <div>
+                                <h3 class="template-name">专业旁白声音库</h3>
+                                <div class="template-author">多引擎组合</div>
+                            </div>
+                            <div class="template-rating">
+                                ⭐ 4.8
+                            </div>
+                        </div>
+                        <p class="template-desc">专为旁白设计，声音沉稳磁性，适合长篇叙述，不易疲劳。</p>
+                        <div class="template-tags">
+                            <span class="tag">旁白</span>
+                            <span class="tag">磁性</span>
+                            <span class="tag">多引擎</span>
+                        </div>
+                        <div class="template-footer">
+                            <div class="template-stats">
+                                <div class="stat">💾 9.5k</div>
+                                <div class="stat">❤️ 7.3k</div>
+                            </div>
+                            <button class="btn-use">使用声音</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 风格预设 -->
+        <div class="featured-section">
+            <div class="section-header">
+                <h2 class="section-title">🎨 风格预设</h2>
+                <a class="section-link">查看更多 →</a>
+            </div>
+            
+            <div class="template-grid">
+                <!-- 风格卡片 1 -->
+                <div class="template-card">
+                    <div class="template-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        🌙
+                    </div>
+                    <div class="template-content">
+                        <div class="template-header">
+                            <div>
+                                <h3 class="template-name">悬疑惊悚风格</h3>
+                                <div class="template-author">by 氛围大师</div>
+                            </div>
+                            <div class="template-rating">
+                                ⭐ 4.6
+                            </div>
+                        </div>
+                        <p class="template-desc">低沉紧张的声音设置，配合恰当的语速和停顿，营造悬疑氛围。</p>
+                        <div class="template-tags">
+                            <span class="tag">悬疑</span>
+                            <span class="tag">惊悚</span>
+                            <span class="tag">氛围</span>
+                        </div>
+                        <div class="template-footer">
+                            <div class="template-stats">
+                                <div class="stat">💾 5.8k</div>
+                                <div class="stat">❤️ 4.2k</div>
+                            </div>
+                            <button class="btn-use">使用预设</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 风格卡片 2 -->
+                <div class="template-card">
+                    <div class="template-preview" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        💕
+                    </div>
+                    <div class="template-content">
+                        <div class="template-header">
+                            <div>
+                                <h3 class="template-name">浪漫言情风格</h3>
+                                <div class="template-author">by 情感专家</div>
+                            </div>
+                            <div class="template-rating">
+                                ⭐ 4.9
+                            </div>
+                        </div>
+                        <p class="template-desc">温柔细腻的声音配置，适合言情小说，情感表达丰富自然。</p>
+                        <div class="template-tags">
+                            <span class="tag">言情</span>
+                            <span class="tag">浪漫</span>
+                            <span class="tag">温柔</span>
+                        </div>
+                        <div class="template-footer">
+                            <div class="template-stats">
+                                <div class="stat">💾 16.2k</div>
+                                <div class="stat">❤️ 13.1k</div>
+                            </div>
+                            <button class="btn-use">使用预设</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 风格卡片 3 -->
+                <div class="template-card">
+                    <div class="template-preview" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        🚀
+                    </div>
+                    <div class="template-content">
+                        <div class="template-header">
+                            <div>
+                                <h3 class="template-name">科幻未来风格</h3>
+                                <div class="template-author">by 未来之声</div>
+                            </div>
+                            <div class="template-rating">
+                                ⭐ 4.7
+                            </div>
+                        </div>
+                        <p class="template-desc">现代感十足的声音配置，适合科幻题材，富有未来感和科技感。</p>
+                        <div class="template-tags">
+                            <span class="tag">科幻</span>
+                            <span class="tag">未来</span>
+                            <span class="tag">现代</span>
+                        </div>
+                        <div class="template-footer">
+                            <div class="template-stats">
+                                <div class="stat">💾 7.6k</div>
+                                <div class="stat">❤️ 5.9k</div>
+                            </div>
+                            <button class="btn-use">使用预设</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 筛选按钮
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 模板卡片点击
+        document.querySelectorAll('.template-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                if (!e.target.classList.contains('btn-use')) {
+                    console.log('查看模板详情');
+                }
+            });
+        });
+
+        // 使用模板按钮
+        document.querySelectorAll('.btn-use').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                console.log('应用模板');
+            });
+        });
+
+        console.log('🎨 模板市场页面已加载');
+    </script>
+</body>
+</html>
